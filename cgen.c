@@ -87,10 +87,15 @@ struct cexp *make_cexp(const char *a, const char *before, const char *global,
     r->Global.Last->S = global;
     r->Global.First = r->Global.Last;
   }
-  if (global) {
+  if (header) {
     r->Header.Last = get_mem(sizeof(struct StringList));
     r->Header.Last->S = header;
     r->Header.First = r->Header.Last;
   }
   return r;
+}
+void add_cexp(struct cexp *a, struct cexp *b) {
+  appendStringList(&a->Context, b->Context);
+  appendStringList(&a->Global, b->Global);
+  appendStringList(&a->Header, b->Header);
 }

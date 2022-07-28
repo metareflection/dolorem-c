@@ -292,6 +292,7 @@ char *readFile(const char *name, size_t *len) {
 }
 
 static void prepare_string(char *s, struct val *e, char type) {
+  (void)e;
   char *r, *w;
   for (r = s, w = s; *r;) {
     if (*r == type) {
@@ -652,7 +653,7 @@ resume_loop:
         progn_cons->car.CharIdx = r.CharIdx;
         progn_cons->car.FileIdx = fileidx;
         progn_cons->car.T = tyIdent;
-        progn_cons->car.V.S = "scope";
+        progn_cons->car.V.S = "progn";
         progn_cons->cdr = r;
         v = &v->V.L->cdr;
         goto resume_loop;

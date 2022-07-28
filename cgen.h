@@ -1,3 +1,6 @@
+#ifndef CGEN_H
+#define CGEN_H
+
 #include "list.h"
 
 typedef struct cv cv;
@@ -28,5 +31,8 @@ struct cexp {
 };
 struct cexp *make_cexp(const char *a, const char *before, const char *global,
                        const char *header);
+void add_cexp(struct cexp *orig, struct cexp *add);
 
 extern char nullStr;
+
+#endif

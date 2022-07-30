@@ -1,0 +1,8 @@
+(compile (funproto puts ((char* a)) void))
+(compile (funproto make-cexp ((void* a) (void* before) (void* global) (void* header)) void*))
+(compile (function hello () void (puts "hello, world!")))
+(compile (function run ((void* a)) void* (progn
+  (hello)
+  (make-cexp "" "" "" ""))))
+(mark-as-macro run)
+(run)

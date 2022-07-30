@@ -1,9 +1,12 @@
 #include "lower.h"
+#include "cgen.h"
 #include "hashmap.h"
 #include "list.h"
 
 #include <assert.h>
 #include <dlfcn.h>
+#include <libtcc.h>
+#include <stdlib.h>
 #include <string.h>
 
 static struct StringListContainer header;
@@ -14,10 +17,11 @@ void init_lower() {
   macros = hashmap_new();
   lower_mark_as_macro("progn");
   lower_mark_as_macro("scope");
-  lower_mark_as_macro("mark-as-macro");
+  lower_mark_as_macro("mark_as_macro");
   lower_mark_as_macro("lower");
   lower_mark_as_macro("function");
   lower_mark_as_macro("compile");
+  lower_mark_as_macro("funproto");
   dlhdl = dlopen(NULL, RTLD_LAZY);
 }
 void end_lower() {}
@@ -37,12 +41,13 @@ static struct cexp *lower_call(struct val *e) {
     /* regular function call */
     struct cexp *r = make_cexp(print_to_mem("%s(", name), NULL, NULL, NULL);
     int first_element = 1;
-    for (struct val *args = cdr(e); args; args = cdr(e)) {
+    for (struct val *args = cdr(e); !is_nil(args); args = cdr(args)) {
       struct cexp *a = lower(car(args));
       add_cexp(r, a);
       r->E = print_to_mem(first_element ? "%s%s" : "%s, %s", r->E, a->E);
       first_element = 0;
     }
+    r->E = print_to_mem("%s)", r->E);
     return r;
   }
 }
@@ -66,12 +71,21 @@ struct cexp *lower(struct val *e) {
 
 struct cexp *progn(struct val *e) {
   struct cexp *r = make_cexp("", NULL, NULL, NULL);
-  for (struct val *args = cdr(e); args; args = cdr(e)) {
+  for (struct val *args = e; !is_nil(args); args = cdr(args)) {
     struct cexp *a = lower(car(args));
     add_cexp(r, a);
+    if (a->E && *a->E) {
+      appendString(&r->Context, print_to_mem("%s;\n", a->E));
+    }
     r->E = a->E;
   }
   return r;
+}
+struct cexp *compile_each(struct val *e) {
+  for (struct val *args = e; !is_nil(args); args = cdr(args)) {
+    lower_compile(lower(car(args)));
+  }
+  return make_cexp("", NULL, NULL, NULL);
 }
 
 static const char *expect_type(struct val *e) {
@@ -89,7 +103,7 @@ char *get_funproto(struct val *e) {
   const char *ret = expect_type(car(cdr(cdr(e))));
   char *res = print_to_mem("%s %s(", ret, name);
   int first_element = 1;
-  for (struct val *args = car(cdr((e))); !is_nil(args); args = cdr(e)) {
+  for (struct val *args = car(cdr((e))); !is_nil(args); args = cdr(args)) {
     struct val *a = car(args);
     res = print_to_mem(first_element ? "%s%s %s" : "%s, %s %s", res,
                        expect_type(car(a)),
@@ -113,22 +127,32 @@ struct cexp *function(struct val *e) {
   appendStringList(&r->Global, body->Context);
   if (strcmp(expect_ident(car(cdr(cdr(e)))), "void")) {
     appendString(&r->Global, "return ");
-    appendString(&r->Global, body->E);
-    appendString(&r->Global, ";\n");
   }
-  appendString(&r->Global, "}\n");
+  appendString(&r->Global, body->E);
+  appendString(&r->Global, ";\n}\n");
   return r;
 }
 
 void lower_compile(struct cexp *c) {
   appendStringList(&header, c->Header);
-  /* TODO: actually compile */
-  printf("TODO: compile the following: [%s|%s|%s|%s]\n", c->E,
+  printf("compiling the following: [%s|%s|%s|%s]\n", c->E,
          toOneString(c->Context), toOneString(c->Global),
          toOneString(c->Header));
+
+  if (c->Global.First) {
+    char file[] = "/tmp/doloutXXXXXX";
+    assert(mkstemp(file));
+    TCCState *state = tcc_new();
+    tcc_set_output_type(state, TCC_OUTPUT_DLL);
+    tcc_compile_string(state, twoStringListsToOneString(header, c->Global));
+    tcc_output_file(state, file);
+    tcc_delete(state);
+
+    assert(dlopen(file, RTLD_GLOBAL | RTLD_NOW));
+  }
 }
 struct cexp *compile(struct val *c) {
-  lower_compile(lower(c));
+  lower_compile(lower(car(c)));
   return make_cexp("", NULL, NULL, NULL);
 }
 

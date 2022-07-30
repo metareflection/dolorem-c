@@ -52,6 +52,33 @@ char *toOneString(struct StringListContainer c) {
   }
   return r;
 }
+char *twoStringListsToOneString(struct StringListContainer c,
+                                struct StringListContainer c2) {
+  struct StringList *s;
+  char *r;
+  unsigned len, i, l;
+  len = 0;
+  for (s = c.First; s; s = s->L) {
+    len += strlen(s->S);
+  }
+  for (s = c2.First; s; s = s->L) {
+    len += strlen(s->S);
+  }
+  r = get_mem(len + 1);
+  r[len] = 0;
+  i = 0;
+  for (s = c.First; s; s = s->L) {
+    l = strlen(s->S);
+    memcpy(r + i, s->S, l);
+    i += l;
+  }
+  for (s = c2.First; s; s = s->L) {
+    l = strlen(s->S);
+    memcpy(r + i, s->S, l);
+    i += l;
+  }
+  return r;
+}
 const char *sanitizeName(const char *name) {
   unsigned long len;
   char *r, *p;

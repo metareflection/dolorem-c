@@ -6,13 +6,13 @@ CFLAGS ?=
 LINKFLAGS ?=
 
 %.o: %.c *.h
-	$(CC) -c -Wall -Wextra -fpic -std=c11 $< -o $@ $(MODE) $(CFLAGS)
+	$(CC) -c -Wall -Wextra -fpic $< -o $@ $(MODE) $(CFLAGS)
 
 libdolorem.so: list.o cgen.o hashmap.o include.o main.o lower.o os_detection.o
-	$(CC) $^ -o $@ -ldl -shared $(LINKFLAGS)
+	$(CC) $^ -o $@ -ldl -shared $(LINKFLAGS) -ltcc
 
 dolorem: main.o libdolorem.so
-	$(CC) -L. $^ -o $@ -ldl $(MODE) $(LINKFLAGS)
+	$(CC) -L. $^ -o $@ -ldl $(MODE) $(LINKFLAGS) -ltcc
 
 .PHONY: report clean
 report:

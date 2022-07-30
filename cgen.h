@@ -18,6 +18,8 @@ void appendStringList(struct StringListContainer *sl,
                       struct StringListContainer l);
 void printAll(struct StringListContainer c);
 char *toOneString(struct StringListContainer c);
+char *twoStringListsToOneString(struct StringListContainer c1,
+                                struct StringListContainer c2);
 const char *sanitizeName(const char *name);
 
 extern int uniqueIntAt;

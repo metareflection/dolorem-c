@@ -9,6 +9,7 @@ void end_lower();
 
 struct cexp *lower(struct val *e);
 struct cexp *progn(struct val *e);
+struct cexp *compile_each(struct val *e);
 struct cexp *function(struct val *e);
 struct cexp *funproto(struct val *e);
 struct cexp *compile(struct val *e);

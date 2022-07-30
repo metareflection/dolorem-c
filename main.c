@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
   for (i = 1; i < argc; ++i) {
     if (files[i]) {
-      lower_compile(lower(car(files[i])));
+      lower_compile(progn(files[i]));
       // lower_include_list(argv[i], files[i]);
       read_filename = 1;
     }

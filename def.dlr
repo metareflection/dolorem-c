@@ -8,6 +8,7 @@
 (compile (funproto get-context ((void* a)) char*))
 (compile (funproto get-global ((void* a)) char*))
 (compile (funproto get-header ((void* a)) char*))
+(compile (funproto set-expression ((void* a) (char* b)) void))
 (compile (funproto cdr ((void* a)) void*))
 (compile (funproto lower ((void* a)) void*))
 (compile (funproto cdr ((void* a)) void*))

@@ -37,6 +37,7 @@ void add_cexp(struct cexp *orig, struct cexp *add);
 void append_cexp(struct cexp *orig, const char *a, const char *before,
                  const char *global, const char *header);
 const char *get_expression(struct cexp *e);
+void set_expression(struct cexp *e, const char *s);
 const char *get_context(struct cexp *e);
 const char *get_global(struct cexp *e);
 const char *get_header(struct cexp *e);

@@ -1,6 +1,6 @@
 (compile (funproto make-cexp ((void* a) (void* before) (void* global) (void* header)) void*))
 (compile (funproto add-cexp ((void* a) (void* b)) void*))
-(compile (funproto append-cexp ((void* a) (char* a) (char* before) (char* global) (char* header)) void))
+(compile (funproto append-cexp ((void* a) (char* exp) (char* before) (char* global) (char* header)) void))
 (compile (funproto call-macro ((char* name) (void* e)) void*))
 (compile (funproto lower-compile ((void* a)) void))
 (compile (funproto car ((void* a)) void*))

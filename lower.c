@@ -5,7 +5,7 @@
 
 #include <assert.h>
 #include <dlfcn.h>
-#include <libtcc.h>
+//#include <libtcc.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -112,7 +112,7 @@ char *get_funproto(struct val *e) {
   return res;
 }
 struct cexp *funproto(struct val *e) {
-  return make_cexp("", NULL, NULL, print_to_mem("%s);", get_funproto(e)));
+  return make_cexp("", NULL, NULL, print_to_mem("%s);\n", get_funproto(e)));
 }
 struct cexp *function(struct val *e) {
   const char *proto = get_funproto(e);
@@ -139,13 +139,16 @@ void lower_compile(struct cexp *c) {
          toOneString(c->Header));
 
   if (c->Global.First) {
+    char cmdline[255];
     char file[] = "/tmp/doloutXXXXXX";
+    char *content = twoStringListsToOneString(header, c->Global);
     assert(mkstemp(file));
-    TCCState *state = tcc_new();
-    tcc_set_output_type(state, TCC_OUTPUT_DLL);
-    tcc_compile_string(state, twoStringListsToOneString(header, c->Global));
-    tcc_output_file(state, file);
-    tcc_delete(state);
+    snprintf(cmdline, sizeof(cmdline),
+             "clang -xc - -o %s -fpic -shared -fpermissive -Wno-everything",
+             file);
+    FILE *clang = popen(cmdline, "w");
+    fwrite(content, strlen(content), 1, clang);
+    pclose(clang);
 
     if (!dlopen(file, RTLD_GLOBAL | RTLD_NOW)) {
       compiler_error_internal("linking failure: %s", dlerror());

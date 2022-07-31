@@ -1,9 +1,16 @@
 (include "def.dlr")
 
+(defmacro add (progn
+  (:= left (lower (car args)))
+  (:= right (lower (car (cdr args))))
+  (add-cexp left right)
+  (set-expression left (print-to-mem "(%s) + (%s)" (get-expression left) (get-expression right)))
+ left))
+
 (defun hello () void (progn
   (var x int)
   (assign x 5)
-  (:= y 10)
+  (:= y (add x 3))
   (cond y
     (puts "yay"))
   (printf "%i %i\n" x y)))

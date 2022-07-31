@@ -9,10 +9,10 @@ LINKFLAGS ?=
 	$(CC) -c -Wall -Wextra -fpic $< -o $@ $(MODE) $(CFLAGS)
 
 libdolorem.so: list.o cgen.o hashmap.o include.o main.o lower.o os_detection.o
-	$(CC) $^ -o $@ -ldl -shared $(LINKFLAGS) -ltcc
+	$(CC) $^ -o $@ -ldl -shared $(LINKFLAGS)
 
 dolorem: main.o libdolorem.so
-	$(CC) -L. $^ -o $@ -ldl $(MODE) $(LINKFLAGS) -ltcc
+	$(CC) -L. $^ -o $@ -ldl $(MODE) $(LINKFLAGS)
 
 .PHONY: report clean
 report:

@@ -126,3 +126,15 @@ void add_cexp(struct cexp *a, struct cexp *b) {
   appendStringList(&a->Global, b->Global);
   appendStringList(&a->Header, b->Header);
 }
+void append_cexp(struct cexp *orig, const char *a, const char *before,
+                 const char *global, const char *header) {
+  orig->E = a;
+  appendString(&orig->Context, before);
+  appendString(&orig->Global, global);
+  appendString(&orig->Header, header);
+}
+
+const char *get_expression(struct cexp *e) { return e->E; }
+const char *get_context(struct cexp *e) { return toOneString(e->Context); }
+const char *get_global(struct cexp *e) { return toOneString(e->Global); }
+const char *get_header(struct cexp *e) { return toOneString(e->Header); }

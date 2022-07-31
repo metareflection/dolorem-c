@@ -1,8 +1,11 @@
-(compile (funproto puts ((char* a)) void))
-(compile (funproto make-cexp ((void* a) (void* before) (void* global) (void* header)) void*))
-(compile (function hello () void (puts "hello, world!")))
-(compile (function run ((void* a)) void* (progn
-  (hello)
-  (make-cexp "" "" "" ""))))
-(mark-as-macro run)
+(include "def.dlr")
+
+(defun hello () void (progn
+  (var x int)
+  (assign x 5)
+  (:= y 10)
+  (cond y
+    (puts "yay"))
+  (printf "%i %i\n" x y)))
+(defmacro run (progn (hello) (make-cexp "" "" "" "")))
 (run)

@@ -1,0 +1,83 @@
+(compile (funproto make-cexp ((void* a) (void* before) (void* global) (void* header)) void*))
+(compile (funproto add-cexp ((void* a) (void* b)) void*))
+(compile (funproto append-cexp ((void* a) (char* a) (char* before) (char* global) (char* header)) void))
+(compile (funproto call-macro ((char* name) (void* e)) void*))
+(compile (funproto lower-compile ((void* a)) void))
+(compile (funproto car ((void* a)) void*))
+(compile (funproto get-expression ((void* a)) char*))
+(compile (funproto get-context ((void* a)) char*))
+(compile (funproto get-global ((void* a)) char*))
+(compile (funproto get-header ((void* a)) char*))
+(compile (funproto cdr ((void* a)) void*))
+(compile (funproto lower ((void* a)) void*))
+(compile (funproto cdr ((void* a)) void*))
+(compile (funproto cons ((void* a) (void* b)) void*))
+(compile (funproto expect-ident ((void* a)) char*))
+(compile (funproto expect-type ((void* a)) char*))
+(compile (funproto make-nil-val () void*))
+(compile (funproto make-int-val ((long i)) void*))
+(compile (funproto make-string-val ((char* i)) void*))
+(compile (funproto make-ident-val ((char* i)) void*))
+(compile (funproto make-char-val ((char i)) void*))
+(compile (funproto print-to-mem ((char* fmt) ...) char*))
+(compile (funproto lower-mark-as-macro ((char* a)) void))
+
+(compile (funproto puts ((char* a)) void))
+(compile (funproto printf ((char* fmt) ...) int))
+
+(compile (function defun ((void* args)) void* (progn
+  (lower-compile (call-macro "function" args))
+  (make-cexp "" "" "" ""))))
+(mark-as-macro defun)
+
+(defun defmacro ((void* args)) void* (progn
+  (call-macro "defun" (cons
+    (car args)
+    (cons
+      (cons (cons (make-ident-val "void*") (cons (make-ident-val "args") (make-nil-val))) (make-nil-val))
+      (cons
+        (make-ident-val "void*")
+        (cons
+          (car (cdr args))
+          (make-nil-val))))))
+  (lower-mark-as-macro (expect-ident (car args)))
+  (make-cexp "" "" "" "")))
+(mark-as-macro defmacro)
+
+(defmacro var
+  (make-cexp (expect-ident (car args))
+             (print-to-mem "%s %s;\n" (expect-type (car (cdr args))) (expect-ident (car args)))
+             ""
+             ""))
+
+(defun lower-colon-equals ((char* lhs) (void* rhs)) void* (progn
+  (append-cexp rhs
+            lhs
+            (print-to-mem "typeof(%s) %s = %s;\n" (get-expression rhs) lhs (get-expression rhs))
+            ""
+            "")
+ rhs))
+
+(defmacro :=
+  (lower-colon-equals (expect-ident (car args))
+                      (lower (car (cdr args)))))
+
+(defmacro assign (progn
+  (:= lhs (lower (car args)))
+  (:= rhs (lower (car (cdr args))))
+  (add-cexp lhs rhs)
+  (append-cexp lhs
+               (print-to-mem "(%s) = (%s)" (get-expression lhs) (get-expression rhs))
+               ""
+               ""
+               "")
+ lhs))
+
+(defmacro cond (progn
+  (:= c (lower (car args)))
+  (:= body (lower (car (cdr args))))
+ (make-cexp ""
+            (print-to-mem "%sif(%s) { %s%s; }\n" (get-context c) (get-expression c)
+                                               (get-context body) (get-expression body))
+            (print-to-mem "%s%s" (get-global c) (get-global body))
+            (print-to-mem "%s%s" (get-header c) (get-header body)))))

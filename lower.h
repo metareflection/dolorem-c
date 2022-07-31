@@ -16,5 +16,7 @@ struct cexp *compile(struct val *e);
 void lower_compile(struct cexp *e);
 struct cexp *mark_as_macro(struct val *e);
 void lower_mark_as_macro(const char *e);
+struct cexp *call_macro(const char *name, struct val *e);
+const char *expect_type(struct val *e);
 
 #endif

@@ -12,7 +12,7 @@ Just type `make`. You may need to specify the environment variable `CC`, especia
 If you want to use tcc compilation (much, much faster, but currently only works on Linux), use `make TCC=1`.
 
 ## First steps
-There is some simple example code in this repository. To run it, type `./dolorem a.dlr`. (Depending on the system, you may need to add `.` to LD's search path. `export LD_LIBRARY_PATH=.:%LD_LIBRARY:PATH` should do it.)
+There is some simple example code in this repository. To run it, type `./dolorem a.dlr`. (Depending on the system, you may need to add `.` to LD's search path. `export LD_LIBRARY_PATH=.:$LD_LIBRARY:PATH` should do it.)
 
 ### Hello, world
 Here's a dolorem-c program that prints "Hello, world!" during compilation:

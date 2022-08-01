@@ -4,10 +4,12 @@ a dolorem staging system.
 
 ## Dependencies
 * Mac OS/Linux (BSD might work)
-* clang in PATH
+* either clang in PATH or libtcc
 
 ## Compiling it
 Just type `make`. You may need to specify the environment variable `CC`, especially if you installed libtcc in a non-standard directory.
+
+If you want to use tcc compilation (much, much faster, but currently only works on Linux), use `make TCC=1`.
 
 ## First steps
 There is some simple example code in this repository. To run it, type `./dolorem a.dlr`. (Depending on the system, you may need to add `.` to LD's search path. `export LD_LIBRARY_PATH=.:%LD_LIBRARY:PATH` should do it.)

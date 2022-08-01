@@ -5,7 +5,9 @@
 
 #include <assert.h>
 #include <dlfcn.h>
-//#include <libtcc.h>
+#ifdef TCC
+#include <libtcc.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -139,10 +141,17 @@ void lower_compile(struct cexp *c) {
          toOneString(c->Header));
 
   if (c->Global.First) {
-    char cmdline[255];
     char file[] = "/tmp/doloutXXXXXX";
     char *content = twoStringListsToOneString(header, c->Global);
     assert(mkstemp(file));
+#ifdef TCC
+    TCCState *state = tcc_new();
+    tcc_set_output_type(state, TCC_OUTPUT_DLL);
+    tcc_compile_string(state, content);
+    tcc_output_file(state, file);
+    tcc_delete(state);
+#else
+    char cmdline[255];
     snprintf(cmdline, sizeof(cmdline),
              "clang -xc - -o %s -fpic -shared -fpermissive -Wno-everything "
              "-Wl,-undefined,dynamic_lookup",
@@ -150,6 +159,7 @@ void lower_compile(struct cexp *c) {
     FILE *clang = popen(cmdline, "w");
     fwrite(content, strlen(content), 1, clang);
     pclose(clang);
+#endif
 
     if (!dlopen(file, RTLD_GLOBAL | RTLD_NOW)) {
       compiler_error_internal("linking failure: %s", dlerror());

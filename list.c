@@ -27,6 +27,22 @@ struct val *make_char_val(char i);
 
 static const char *format_source_loc(struct val l);
 
+struct val *list(struct val *e, ...) {
+  struct val r;
+  struct val *p = &r;
+  struct val *i;
+  va_list list;
+  va_start(list, e);
+  for (i = e; !is_nil(i); i = va_arg(list, struct val *)) {
+    p->T = tyCons;
+    p->V.L = get_mem(sizeof(struct cons));
+    p->V.L->car = *i;
+    p = &(p->V.L->cdr);
+  }
+  va_end(list);
+  return copy_val(r);
+}
+
 struct MemAllocator {
   char *At;
   long Left;

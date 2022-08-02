@@ -153,7 +153,7 @@ void lower_compile(struct cexp *c) {
 #else
     char cmdline[255];
     snprintf(cmdline, sizeof(cmdline),
-             "clang -xc - -o %s -fpic -shared -fpermissive -Wno-everything "
+             "clang -xc - -o %s -fpic -g -shared -fpermissive -Wno-everything "
              "-Wl,-undefined,dynamic_lookup",
              file);
     FILE *clang = popen(cmdline, "w");

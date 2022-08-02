@@ -114,6 +114,7 @@ inline struct val *cons(struct val *a, struct val *b) {
   e.V.L->cdr = *b;
   return copy_val(e);
 }
+struct val *list(struct val *e, ...);
 inline int is_nil(struct val *e) { return e->T == tyCons && !e->V.L; }
 inline int val_is_int(struct val *e) { return e->T == tyInt; }
 inline int val_is_list(struct val *e) { return e->T == tyCons && e->V.L; }

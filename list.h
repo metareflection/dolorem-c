@@ -103,6 +103,12 @@ inline struct val *make_ident_val(char *a) {
   r->V.S = a;
   return r;
 }
+inline struct val *make_float_val(double x) {
+  struct val *r;
+  r = make_val(tyFloat);
+  r->V.F = x;
+  return r;
+}
 inline struct val *cons(struct val *a, struct val *b) {
   struct val e;
   e.T = tyCons;
@@ -117,6 +123,7 @@ inline struct val *cons(struct val *a, struct val *b) {
 struct val *list(struct val *e, ...);
 inline int is_nil(struct val *e) { return e->T == tyCons && !e->V.L; }
 inline int val_is_int(struct val *e) { return e->T == tyInt; }
+inline int val_is_char(struct val *e) { return e->T == tyChar; }
 inline int val_is_list(struct val *e) { return e->T == tyCons && e->V.L; }
 inline int val_is_ident(struct val *e) { return e->T == tyIdent; }
 inline int val_is_float(struct val *e) { return e->T == tyFloat; }

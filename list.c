@@ -12,6 +12,7 @@ struct val *cdr(struct val *e);
 struct val *cons(struct val *a, struct val *b);
 int is_nil(struct val *e);
 int val_is_int(struct val *e);
+int val_is_char(struct val *e);
 int val_is_list(struct val *e);
 int val_is_ident(struct val *e);
 int val_is_float(struct val *e);
@@ -24,6 +25,7 @@ struct val *make_int_val(long i);
 struct val *make_string_val(char *a);
 struct val *make_ident_val(char *a);
 struct val *make_char_val(char i);
+struct val *make_float_val(double x);
 void val_set_string(struct val *e, char *n);
 
 static const char *format_source_loc(struct val l);
@@ -322,29 +324,11 @@ static void prepare_string(char *s, struct val *e, char type) {
       ++r;
       continue;
     }
-    /*if (*r == '\\') {
-      switch (*++r) {
-      case '\\':
-        *w++ = '\\';
-        break;
-      case '\"':
-        *w++ = '\"';
-        break;
-      case '\'':
-        *w++ = '\'';
-        break;
-      case 'n':
-        *w++ = '\n';
-        break;
-      case 't':
-        *w++ = '\t';
-        break;
-      default:
-        compiler_error(e, "invalid control sequence \"%c\"", *r);
+    if (*r == '\\') {
+      if (*(r + 1) == '\"') {
+        *w++ = *r++;
       }
-    ++r;
-    continue;
-  }*/
+    }
     *w++ = *r++;
   }
   *w = 0;
@@ -636,7 +620,7 @@ resume_loop:
           compiler_error(&r, "missing closing parentheses");
         }
         if (*s == '"') {
-          for (; *s != '"'; ++s) {
+          for (++s; *s != '"' || *(s - 1) == '\\'; ++s) {
             if (!*s) {
               compiler_error(&r, "missing closing '\"'");
             }

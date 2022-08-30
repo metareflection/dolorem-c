@@ -15,6 +15,7 @@
 (compile (funproto val-is-string ((void* a)) int))
 (compile (funproto val-is-int ((void* a)) int))
 (compile (funproto val-is-ident ((void* a)) int))
+(compile (funproto val-is-char ((void* a)) int))
 (compile (funproto val-is-list ((void* a)) int))
 (compile (funproto val-is-float ((void* a)) int))
 (compile (funproto is-nil ((void* a)) int))
@@ -27,11 +28,14 @@
 (compile (funproto make-int-val ((long i)) void*))
 (compile (funproto make-string-val ((char* i)) void*))
 (compile (funproto make-ident-val ((char* i)) void*))
+(compile (funproto make-float-val ((double i)) void*))
 (compile (funproto make-char-val ((char i)) void*))
 (compile (funproto print-to-mem ((char* fmt) ...) char*))
 (compile (funproto lower-mark-as-macro ((char* a)) void))
 (compile (funproto count-len ((void* a)) int))
 (compile (funproto val-set-string ((void* a) (char* n)) void))
+(compile (funproto compile-error ((void* l) (char* fmt) ...) void))
+(compile (funproto get-loc-info ((void* a) (char** name) (long* l) (long* chr) (char** line)) void))
 
 (compile (funproto puts ((char* a)) void))
 (compile (funproto printf ((char* fmt) ...) int))
@@ -75,6 +79,18 @@
   (lower-colon-equals (expect-ident (car args))
                       (lower-now (car (cdr args)))))
 
+(defmacro global-var (progn
+  (:= def (print-to-mem "%s %s;" (expect-type (car args)) (expect-ident (car (cdr args)))))
+ (make-cexp "" "" def (print-to-mem "extern %s" def))))
+
+# This is ugly. But I'm not sure how else to work around stupid C funptr syntax.
+(defmacro define-macrotypedef
+ (make-cexp "" "" "" "typedef void*(*macrofunptr)(void*a);")))
+(compile (define-macrotypedef)))
+
+(compile (funproto override-macro ((char* a) (char* b)) macrofunptr))
+
+
 (defmacro not (progn
   (:= o (lower-now (car args)))
   (set-expression o (print-to-mem "!(%s)" (get-expression o)))
@@ -91,8 +107,6 @@
                "")
  lhs))
 
-
-
 (defmacro assign (progn
   (:= lhs (lower-now (car args)))
   (:= rhs (lower-now (car (cdr args))))
@@ -104,15 +118,6 @@
                "")
  lhs))
 
-(defmacro cond (progn
-  (:= c (lower-now (car args)))
-  (:= body (lower-now (car (cdr args))))
- (make-cexp ""
-            (print-to-mem "%sif(%s) { %s%s; }\n" (get-context c) (get-expression c)
-                                               (get-context body) (get-expression body))
-            (print-to-mem "%s%s" (get-global c) (get-global body))
-            (print-to-mem "%s%s" (get-header c) (get-header body)))))
-
 (defmacro ptr-to (progn
   (:= c (lower-now (car args)))
  (make-cexp (print-to-mem "&(%s)" (get-expression c))
@@ -120,13 +125,19 @@
             (get-global c)
             (get-header c))))
 
-(defmacro global-var (progn
-  (:= def (print-to-mem "%s %s;" (expect-type (car args)) (expect-ident (car (cdr args)))))
- (make-cexp "" "" def (print-to-mem "extern %s" def))))
+(include "csrchints.dlr")
 
-# This is ugly. But I'm not sure how else to work around stupid C funptr syntax.
-(defmacro define-macrotypedef
- (make-cexp "" "" "" "typedef void*(*macrofunptr)(void*a);")))
-(compile (define-macrotypedef)))
 
-(compile (funproto override-macro ((char* a) (char* b)) macrofunptr))
+(defmacro cond (progn
+  (:= c (lower-now (car args)))
+  (:= body (lower-now (car (cdr args))))
+ (make-cexp ""
+            (print-to-mem "%sif(%s) {\n%s%s; }\n" (get-context c) (get-expression c)
+                                               (get-context body) (get-expression body))
+            (print-to-mem "%s%s" (get-global c) (get-global body))
+            (print-to-mem "%s%s" (get-header c) (get-header body)))))
+
+(defmacro print-c-code (progn
+  (:= a (lower-now (car args)))
+  (printf "Printing code as asked: [%s|%s|%s|%s]\n" (get-expression a) (get-context a) (get-global a) (get-header a))
+  (make-cexp "" "" "" "")))

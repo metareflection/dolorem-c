@@ -1,0 +1,19 @@
+# This layer adds hints to the C compiler about the origin of source code. Very useful
+# when debugging dolorem code.
+#
+# The output of this is not very clean, but usually good enough to prove the concept
+# and be useful in some circumstances.
+
+(compile (global-var macrofunptr csrchints_old_lower))
+(defmacro load-csrchints (progn
+  (assign csrchints-old-lower (override-macro "lower" "lower-csrchints"))
+  (make-cexp "" "" "" "")))
+(defmacro lower-csrchints (progn
+  (:= r (csrchints-old-lower args))
+  (var filename char*)
+  (var line long)
+  (get-loc-info args (ptr-to filename) (ptr-to line) 0 0)
+  (append-cexp r (get-expression r) (print-to-mem "# %li \"%s\"\n" line filename) "" "")
+ r))
+
+(load-csrchints)

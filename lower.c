@@ -19,27 +19,27 @@ void init_lower() {
   macros = hashmap_new();
   lower_mark_as_macro("progn");
   lower_mark_as_macro("include");
-  lower_mark_as_macro("scope");
   lower_mark_as_macro("mark_as_macro");
   lower_mark_as_macro("function");
   lower_mark_as_macro("compile");
   lower_mark_as_macro("funproto");
+  lower_mark_as_macro("lower");
   dlhdl = dlopen(NULL, RTLD_LAZY);
 }
 void end_lower() {}
 
 static struct cexp *lower_call(struct val *e) {
   const char *name = sanitizeName(expect_ident(car(e)));
-  void *dummy;
-  if (hashmap_get(macros, name, &dummy) == MAP_OK) {
+  struct cexp *(*m)(struct val *);
+  if (hashmap_get(macros, name, (void **)&m) == MAP_OK) {
     /* call macro */
-    return call_macro(name, cdr(e));
+    return m(cdr(e));
   } else {
     /* regular function call */
     struct cexp *r = make_cexp(print_to_mem("%s(", name), NULL, NULL, NULL);
     int first_element = 1;
     for (struct val *args = cdr(e); !is_nil(args); args = cdr(args)) {
-      struct cexp *a = lower(car(args));
+      struct cexp *a = call_macro("lower", car(args));
       add_cexp(r, a);
       r->E = print_to_mem(first_element ? "%s%s" : "%s, %s", r->E, a->E);
       first_element = 0;
@@ -69,7 +69,7 @@ struct cexp *lower(struct val *e) {
 struct cexp *progn(struct val *e) {
   struct cexp *r = make_cexp("", NULL, NULL, NULL);
   for (struct val *args = e; !is_nil(args); args = cdr(args)) {
-    struct cexp *a = lower(car(args));
+    struct cexp *a = call_macro("lower", car(args));
     add_cexp(r, a);
     if (a->E && *a->E && !is_nil(cdr(args))) {
       appendString(&r->Context, print_to_mem("%s;\n", a->E));
@@ -80,7 +80,7 @@ struct cexp *progn(struct val *e) {
 }
 struct cexp *compile_each(struct val *e) {
   for (struct val *args = e; !is_nil(args); args = cdr(args)) {
-    lower_compile(lower(car(args)));
+    lower_compile(call_macro("lower", car(args)));
   }
   return make_cexp("", NULL, NULL, NULL);
 }
@@ -118,7 +118,7 @@ struct cexp *funproto(struct val *e) {
 }
 struct cexp *function(struct val *e) {
   const char *proto = get_funproto(e);
-  struct cexp *body = lower(car(cdr(cdr(cdr(e)))));
+  struct cexp *body = call_macro("lower", car(cdr(cdr(cdr(e)))));
   struct cexp *r =
       make_cexp("", NULL, NULL, print_to_mem("%s);", get_funproto(e)));
   appendStringList(&r->Header, body->Header);
@@ -167,7 +167,7 @@ void lower_compile(struct cexp *c) {
   }
 }
 struct cexp *compile(struct val *c) {
-  lower_compile(lower(car(c)));
+  lower_compile(call_macro("lower", car(c)));
   return make_cexp("", NULL, NULL, NULL);
 }
 
@@ -176,14 +176,33 @@ struct cexp *mark_as_macro(struct val *e) {
   return make_cexp("", NULL, NULL, NULL);
 }
 void lower_mark_as_macro(const char *e) {
-  hashmap_put(macros, sanitizeName(e), NULL);
+  e = sanitizeName(e);
+  struct cexp *(*m)(struct val *) =
+      (struct cexp * (*)(struct val *)) dlsym(dlhdl, e);
+  if (!m) {
+    compiler_error_internal("function not found: \"%s\"", e);
+  }
+  hashmap_put(macros, e, m);
 }
 
 struct cexp *call_macro(const char *name, struct val *e) {
-  struct cexp *(*m)(struct val *) =
-      (struct cexp * (*)(struct val *)) dlsym(dlhdl, name);
-  if (!m) {
+  struct cexp *(*m)(struct val *);
+  if (hashmap_get(macros, name, (void **)&m) != MAP_OK) {
     compiler_error(e, "function not found: \"%s\"", name);
   }
   return m(e);
+}
+
+macrofunptr override_macro(const char *macro, const char *newfun) {
+  macrofunptr res;
+  macro = sanitizeName(macro);
+  newfun = sanitizeName(newfun);
+  hashmap_get(macros, macro, (void **)&res);
+  struct cexp *(*m)(struct val *) =
+      (struct cexp * (*)(struct val *)) dlsym(dlhdl, newfun);
+  if (!m) {
+    compiler_error_internal("function not found: \"%s\"", newfun);
+  }
+  hashmap_put(macros, macro, m);
+  return res;
 }

@@ -24,6 +24,7 @@ struct val *make_int_val(long i);
 struct val *make_string_val(char *a);
 struct val *make_ident_val(char *a);
 struct val *make_char_val(char i);
+void val_set_string(struct val *e, char *n);
 
 static const char *format_source_loc(struct val l);
 

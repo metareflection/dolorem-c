@@ -17,7 +17,7 @@ struct cexp *include(struct val *l) {
 }
 struct cexp *lower_include_list(const char *filename, struct val *list) {
   (void)filename;
-  return progn(list);
+  return call_macro("progn", list);
 }
 struct cexp *lower_include(const char *filename) {
   return lower_include_list(filename, read_file(filename));

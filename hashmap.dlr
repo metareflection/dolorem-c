@@ -1,0 +1,3 @@
+(compile (funproto hashmap-new () void*))
+(compile (funproto hashmap-get ((void* a) (char* key) (void** res)) int))
+(compile (funproto hashmap-put ((void* a) (char* key) (void* val)) int))

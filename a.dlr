@@ -1,18 +1,36 @@
 (include "def.dlr")
+(include "hashmap.dlr")
+
+(defmacro comment
+  (make-cexp "" "" "" ""))
 
 (defmacro add (progn
-  (:= left (lower (car args)))
-  (:= right (lower (car (cdr args))))
+  (:= left (lower-now (car args)))
+  (:= right (lower-now (car (cdr args))))
   (add-cexp left right)
   (set-expression left (print-to-mem "(%s) + (%s)" (get-expression left) (get-expression right)))
  left))
+
+(compile (global-var char* a))
+
+(include "funoverload.dlr")
+
+(defun overloading-test () void (puts "hello world with 0 arguments"))
+(defun overloading-test ((int x)) void (puts "hello world with 1 argument"))
+(defun overloading-test ((int x) (int y)) void (puts "hello world with 2 arguments"))
 
 (defun hello () void (progn
   (var x int)
   (assign x 5)
   (:= y (add x 3))
+  (assign a 96)
+  (printf "%i\n" a)
   (cond y
     (puts "yay"))
-  (printf "%i %i\n" x y)))
+  (puts (expect-ident (car (cdr (list (make-ident-val "hello") (make-ident-val "world") (make-nil-val))))))
+  (printf "%i %i\n" x y)
+  (overloading-test)
+  (overloading-test 5)
+  (overloading-test 5 6)))
 (defmacro run (progn (hello) (make-cexp "" "" "" "")))
 (run)

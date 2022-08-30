@@ -61,7 +61,7 @@ inline struct val *car(struct val *e) {
   if (!e->V.L) {
     return e;
   }
-  return copy_val(e->V.L->car);
+  return &e->V.L->car;
 }
 inline struct val *cdr(struct val *e) {
   if (e->T != tyCons) {
@@ -70,7 +70,7 @@ inline struct val *cdr(struct val *e) {
   if (!e->V.L) {
     return e;
   }
-  return copy_val(e->V.L->cdr);
+  return &e->V.L->cdr;
 }
 inline struct val *make_val(unsigned char t) {
   struct val *l;
@@ -126,6 +126,12 @@ inline const char *expect_ident(struct val *e) {
     compiler_error(e, "expected identifier");
   }
   return e->V.S;
+}
+inline void val_set_string(struct val *e, char *n) {
+  if (e->T != tyIdent) {
+    compiler_error(e, "expected identifier");
+  }
+  e->V.S = n;
 }
 
 #endif

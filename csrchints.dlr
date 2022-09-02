@@ -4,7 +4,7 @@
 # The output of this is not very clean, but usually good enough to prove the concept
 # and be useful in some circumstances.
 
-(compile (global-var macrofunptr csrchints_old_lower))
+(compile (global-var csrchints_old_lower macrofunptr))
 (defmacro load-csrchints (progn
   (assign csrchints-old-lower (override-macro "lower" "lower-csrchints"))
   (make-cexp "" "" "" "")))

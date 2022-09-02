@@ -16,6 +16,12 @@ int main(int argc, char **argv) {
     files[i] = NULL;
     if (strcmp(argv[i], "-") == 0) {
       files[i] = read_stdin();
+    } else if (strcmp(argv[i], "--dump-c-code") == 0 ||
+               strcmp(argv[i], "-C") == 0) {
+      cmdswitch_dump_c_code = 1;
+    } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      printf("USAGE: %s [--dump-c-code] [--help] FILES...\n", argv[0]);
+      return 0;
     } else {
       files[i] = read_file(argv[i]);
     }
@@ -32,6 +38,8 @@ int main(int argc, char **argv) {
     }
   }
   if (!read_filename) {
+    compiler_hint_internal("USAGE: %s [--dump-c-code] [--help] FILES...",
+                           argv[0]);
     compiler_error_internal("no filename specified");
   }
 

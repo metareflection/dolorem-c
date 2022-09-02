@@ -7,6 +7,8 @@
 void init_lower();
 void end_lower();
 
+extern int cmdswitch_dump_c_code;
+
 typedef struct cexp *(*macrofunptr)(struct val *);
 
 struct cexp *lower(struct val *e);

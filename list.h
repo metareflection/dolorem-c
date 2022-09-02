@@ -134,6 +134,30 @@ inline const char *expect_ident(struct val *e) {
   }
   return e->V.S;
 }
+inline const char *expect_string(struct val *e) {
+  if (e->T != tyString) {
+    compiler_error(e, "expected string");
+  }
+  return e->V.S;
+}
+inline long expect_int(struct val *e) {
+  if (e->T != tyInt) {
+    compiler_error(e, "expected int");
+  }
+  return e->V.I;
+}
+inline double expect_float(struct val *e) {
+  if (e->T != tyFloat) {
+    compiler_error(e, "expected float");
+  }
+  return e->V.F;
+}
+inline char expect_char(struct val *e) {
+  if (e->T != tyChar) {
+    compiler_error(e, "expected char");
+  }
+  return e->V.I;
+}
 inline void val_set_string(struct val *e, char *n) {
   if (e->T != tyIdent) {
     compiler_error(e, "expected identifier");

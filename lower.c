@@ -134,11 +134,15 @@ struct cexp *function(struct val *e) {
   return r;
 }
 
+int cmdswitch_dump_c_code;
+
 void lower_compile(struct cexp *c) {
   appendStringList(&header, c->Header);
-  printf("compiling the following: [%s|%s|%s|%s]\n", c->E,
-         toOneString(c->Context), toOneString(c->Global),
-         toOneString(c->Header));
+  if (cmdswitch_dump_c_code) {
+    printf("compiling the following: [%s|%s|%s|%s]\n", c->E,
+           toOneString(c->Context), toOneString(c->Global),
+           toOneString(c->Header));
+  }
 
   if (c->Global.First) {
     char file[] = "/tmp/doloutXXXXXX";

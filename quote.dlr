@@ -1,0 +1,38 @@
+(defun lower-quote ((void* args) (int quasi)) void* (progn
+  (var res char*)
+  (var r void*)
+  (assign r 0)
+  (cond (is-nil args)
+    (assign res "make_nil_val()"))
+  (cond (val-is-int args)
+    (assign res (print-to-mem "make_int_val(%i)" (expect-int args))))
+  (cond (val-is-float args)
+    (assign res (print-to-mem "make_int_float(%f)" (expect-float args))))
+  # this looks scary because of injections
+  (cond (val-is-string args)
+    (assign res (print-to-mem "make_string_val(\"%s\")" (expect-string args))))
+  (cond (val-is-ident args)
+    (assign res (print-to-mem "make_ident_val(\"%s\")" (expect-ident args))))
+  (cond (val-is-char args)
+    (assign res (print-to-mem "make_char_val('%c')" (expect-char args))))
+  (cond (val-is-list args) (progn
+    (:= quasi-here (and quasi (val-is-ident (car args))))
+    (cond quasi-here
+      (assign quasi-here (not (strcmp (expect-ident (car args)) "quasiunquote"))))
+    (cond (not quasi-here) (progn
+      (:= car-quoted (lower-quote (car args) quasi))
+      (:= cdr-quoted (lower-quote (cdr args) quasi))
+      (assign res (print-to-mem "cons((%s), (%s))" (get-expression car-quoted) (get-expression cdr-quoted)))
+      (add-cexp car-quoted cdr-quoted)
+      (append-cexp car-quoted res "" "" "")
+      (assign r car-quoted)))
+    (cond quasi-here
+      (assign r (lower-now (car (cdr args)))))))
+  (cond (not r)
+    (assign r (make-cexp res "" "" "")))
+ r))
+(defmacro quote (lower-quote args 0))
+(defmacro quasiquote (lower-quote args 1))
+(defmacro quasiunquote (progn
+  (compiler-error args "quasiunquote outside of quasiquote")
+  (make-cexp "" "" "" "")))

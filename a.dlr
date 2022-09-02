@@ -11,13 +11,17 @@
   (set-expression left (print-to-mem "(%s) + (%s)" (get-expression left) (get-expression right)))
  left))
 
-(compile (global-var char* a))
+(compile (global-var a char*))
 
 (include "funoverload.dlr")
 
 (defun overloading-test () void (puts "hello world with 0 arguments"))
 (defun overloading-test ((int x)) void (puts "hello world with 1 argument"))
 (defun overloading-test ((int x) (int y)) void (puts "hello world with 2 arguments"))
+
+(include "quote.dlr")
+
+(compile (external-global stdout void*))
 
 (defun hello () void (progn
   (var x int)
@@ -28,9 +32,21 @@
   (cond y
     (puts "yay"))
   (puts (expect-ident (car (cdr (list (make-ident-val "hello") (make-ident-val "world") (make-nil-val))))))
-  (printf "%i %i\n" x y)
+  (printf "%i %i\nHere's some quote: " x y)
+  (print-list (quote (make-string-val "hello")) stdout)
+  (print-list (quasiquote (make-string-val "hello" (quasiunquote (make-string-val "world")))) stdout)
+  (printf "\n")
+  (printf "\n")
   (overloading-test)
   (overloading-test 5)
   (overloading-test 5 6)))
 (defmacro run (progn (hello) (make-cexp "" "" "" "")))
 (run)
+
+(defmacro print-c-code (progn
+  (:= a (lower-now (car args)))
+  (printf "Printing code as asked: [%s|%s|%s|%s]\n" (get-expression a) (get-context a) (get-global a) (get-header a))
+  (make-cexp "" "" "" "")))
+
+(print-c-code
+  (quasiquote (make-string-val "hello" (quasiunquote (make-string-val "world")))) stdout)

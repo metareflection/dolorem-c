@@ -1,0 +1,27 @@
+# TODO
+(defun make-make-funcall ((char* fun-name) (void* arg)) void*
+  (cons (make-ident-val fun-name) (cons arg (make-nil-val))))
+(defun make-cons-funcall ((void* arg1) (void* arg2)) void*
+  (cons (make-ident-val "cons") (cons arg1 (cons arg2 (make-nil-val)))))
+(defun make-make-nil-funcall () void*
+  (cons (make-ident-val "make-nil-val") (make-nil-val)))
+
+# TODO: quasiquoting
+(defun lower-quote ((void* args)) void* (progn
+  (var res void*)
+  (cond (is-nil args)
+    (assign res (make-make-nil-funcall)))
+  (cond (val-is-list args)
+    (assign res (make-cons-funcall (lower-quote (car args) quasi) (lower-quote (cdr args) quasi))))
+  (cond (val-is-int args)
+    (assign res (make-make-funcall "make-int-val" args)))
+  (cond (val-is-float args)
+    (assign res (make-make-funcall "make-float-val" args)))
+  (cond (val-is-string args)
+    (assign res (make-make-funcall "make-string-val" args)))
+  (cond (val-is-ident args)
+    (assign res (make-make-funcall "make-ident-val" (make-string-val (expect-ident args)))))
+  (cond (val-is-char args)
+    (assign res (make-make-funcall "make-char-val" args)))
+ res))
+(defmacro quote (lower-now (lower-quote args)))

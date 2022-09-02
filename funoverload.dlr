@@ -21,15 +21,15 @@
 # yet not too slow.)
 # 
 # We create a global variable to store both old function pointers.
-(compile (global-var macrofunptr funoverload_old_defun))
-(compile (global-var macrofunptr funoverload_old_lower))
+(compile (global-var funoverload_old_defun macrofunptr))
+(compile (global-var funoverload_old_lower macrofunptr))
 # Now, we make a function that loads the layer.
 # 
 # Note that `override-macro` resolves the function from the second argument
 # and uses it to replace the macro from the first argument. It returns a
 # function pointer to the version of the macro that was current before
 # it was current.
-(compile (global-var void* overloaded-fun)) # hashmap to store names of mangled functions
+(compile (global-var overloaded-fun void*)) # hashmap to store names of mangled functions
 (defmacro load-function-overloading (progn
   (assign funoverload-old-defun (override-macro "defun" "defun-overload"))
   (assign funoverload-old-lower (override-macro "lower" "lower-overload"))

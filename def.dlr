@@ -24,6 +24,10 @@
 (compile (funproto cons ((void* a) (void* b)) void*))
 (compile (funproto expect-ident ((void* a)) char*))
 (compile (funproto expect-type ((void* a)) char*))
+(compile (funproto expect-int ((void* a)) long))
+(compile (funproto expect-float ((void* a)) double))
+(compile (funproto expect-char ((void* a)) char))
+(compile (funproto expect-string ((void* a)) char*))
 (compile (funproto make-nil-val () void*))
 (compile (funproto make-int-val ((long i)) void*))
 (compile (funproto make-string-val ((char* i)) void*))
@@ -34,11 +38,12 @@
 (compile (funproto lower-mark-as-macro ((char* a)) void))
 (compile (funproto count-len ((void* a)) int))
 (compile (funproto val-set-string ((void* a) (char* n)) void))
-(compile (funproto compile-error ((void* l) (char* fmt) ...) void))
+(compile (funproto compiler-error ((void* l) (char* fmt) ...) void))
 (compile (funproto get-loc-info ((void* a) (char** name) (long* l) (long* chr) (char** line)) void))
 
 (compile (funproto puts ((char* a)) void))
 (compile (funproto printf ((char* fmt) ...) int))
+(compile (funproto strcmp ((char* a) (char* b)) int))
 
 (compile (function defun ((void* args)) void* (progn
   (lower-compile (call-macro "function" args))
@@ -80,8 +85,11 @@
                       (lower-now (car (cdr args)))))
 
 (defmacro global-var (progn
-  (:= def (print-to-mem "%s %s;" (expect-type (car args)) (expect-ident (car (cdr args)))))
+  (:= def (print-to-mem "%s %s;" (expect-type (car (cdr args))) (expect-ident (car args))))
  (make-cexp "" "" def (print-to-mem "extern %s" def))))
+(defmacro external-global (progn
+  (:= def (print-to-mem "%s %s;" (expect-type (car (cdr args))) (expect-ident (car args))))
+ (make-cexp "" "" "" (print-to-mem "extern %s" def))))
 
 # This is ugly. But I'm not sure how else to work around stupid C funptr syntax.
 (defmacro define-macrotypedef
@@ -107,6 +115,17 @@
                "")
  lhs))
 
+(defmacro and (progn
+  (:= lhs (lower-now (car args)))
+  (:= rhs (lower-now (car (cdr args))))
+  (add-cexp lhs rhs)
+  (append-cexp lhs
+               (print-to-mem "(%s) && (%s)" (get-expression lhs) (get-expression rhs))
+               ""
+               ""
+               "")
+ lhs))
+
 (defmacro assign (progn
   (:= lhs (lower-now (car args)))
   (:= rhs (lower-now (car (cdr args))))
@@ -127,7 +146,6 @@
 
 (include "csrchints.dlr")
 
-
 (defmacro cond (progn
   (:= c (lower-now (car args)))
   (:= body (lower-now (car (cdr args))))
@@ -136,8 +154,3 @@
                                                (get-context body) (get-expression body))
             (print-to-mem "%s%s" (get-global c) (get-global body))
             (print-to-mem "%s%s" (get-header c) (get-header body)))))
-
-(defmacro print-c-code (progn
-  (:= a (lower-now (car args)))
-  (printf "Printing code as asked: [%s|%s|%s|%s]\n" (get-expression a) (get-context a) (get-global a) (get-header a))
-  (make-cexp "" "" "" "")))

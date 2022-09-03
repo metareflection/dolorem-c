@@ -1,5 +1,8 @@
 (include "def.dlr")
 (include "hashmap.dlr")
+(include "quote.dlr")
+(include "layer.dlr")
+(include "funoverload.dlr")
 
 (defmacro comment
   (make-cexp "" "" "" ""))
@@ -13,13 +16,9 @@
 
 (compile (global-var a char*))
 
-(include "funoverload.dlr")
-
 (defun overloading-test () void (puts "hello world with 0 arguments"))
 (defun overloading-test ((int x)) void (puts "hello world with 1 argument"))
 (defun overloading-test ((int x) (int y)) void (puts "hello world with 2 arguments"))
-
-(include "quote.dlr")
 
 (compile (external-global stdout void*))
 

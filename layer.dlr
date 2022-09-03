@@ -1,0 +1,43 @@
+(defun translate-function-override ((char* n) (void* args)) void* (progn
+  (:= name-fun-orig (expect-ident (car args)))
+  (:= name-global-var (print-to-mem "%s_old_%s" n name-fun-orig))
+  (:= name-fun-override (print-to-mem "%s-override-%s" n name-fun-orig))
+  (var res void*)
+  (:= is-init (not (strcmp name-fun-orig "init")))
+  (cond is-init
+    (assign res (car (cdr args))))
+  (cond (not is-init)
+    (assign res (quasiquote progn
+      # Note how this makes use of the fact that global and local definitions can
+      # exist right next to each other on the local level.
+      (global-var (quasiunquote (make-ident-val name-global-var)) macrofunptr)
+      (function (quasiunquote (make-ident-val name-fun-override)) ((void* args)) void* (progn
+        (:= fallback (quasiunquote (make-ident-val name-global-var)))
+        (quasiunquote (car (cdr args)))))
+      (assign
+        (quasiunquote (make-ident-val name-global-var))
+        (override-macro
+          (quasiunquote (make-string-val name-fun-orig))
+          (quasiunquote (make-string-val name-fun-override)))))))
+ res))
+
+(defun translate-function-overrides ((char* n) (void* args)) void* (progn
+  (var res void*)
+  (cond (is-nil args)
+    (assign res (make-nil-val)))
+  (cond (not (is-nil args)) (progn
+    (assign res
+      (cons
+        (translate-function-override n (car args))
+        (translate-function-overrides n (cdr args))))))
+ res))
+
+(defmacro new-layer (lower-now
+  (quasiquote
+    defmacro
+    (quasiunquote (make-ident-val (print-to-mem "load-layer-%s" (expect-ident (car args)))))
+    (progn
+      (quasiunquote
+        (cons (make-ident-val "progn")
+              (translate-function-overrides (expect-ident (car args)) (cdr args))))
+      (make-cexp "" "" "" "")))))

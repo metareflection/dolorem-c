@@ -1,0 +1,69 @@
+# To implement function overloading, we need to do two things. First, we
+# need to change `defun` such that it mangles any newly created function.
+# Second, we change `lower` such that it correctly resolves any overloaded
+# function calls.
+#
+# dolorem-c does not have a type system, therefore function overloading
+# only makes semi-sense :). I still like it as an example, though, so
+# this example only overloads on the number of arguments, not the type.
+#
+# Note that one of the rather unusual features of this overloading layer
+# is that we want mangled and non-mangled functions to coexist as seamlessly
+# as possible. This is necessary because, otherwise, loading the layer
+# would interfer with calling any functions defined before it was loaded.
+#
+# The general pattern of layers in this implementation resembles the common
+# C pattern of "save current function pointer, then override, call old
+# function pointer in new implementation as a fallback". (It might make sense
+# to create a macro with this functionality at some point (which would allow
+# for a more high-level feel of layers, but I'm still struggling with
+# figuring out a good syntax for it. It's very hard to make it powerful,
+# yet not too slow.)
+# 
+# We create a global variable to store both old function pointers.
+(compile (global-var funoverload_old_defun macrofunptr))
+(compile (global-var funoverload_old_lower macrofunptr))
+# Now, we make a function that loads the layer.
+# 
+# Note that `override-macro` resolves the function from the second argument
+# and uses it to replace the macro from the first argument. It returns a
+# function pointer to the version of the macro that was current before
+# it was current.
+(compile (global-var overloaded-fun void*)) # hashmap to store names of mangled functions
+(defmacro load-function-overloading (progn
+  (assign funoverload-old-defun (override-macro "defun" "defun-overload"))
+  (assign funoverload-old-lower (override-macro "lower" "lower-overload"))
+  (assign overloaded-fun (hashmap-new))
+  (make-cexp "" "" "" "")))
+
+# I. Changing `defun`
+#
+# Pretty straightforward. We count the amount of args, append it to the
+# function name. Furthermore, to be able to remember which functions are
+# mangled, we add the function to a global hashmap.
+#
+# Since we're only changing `defun` which isn't intended for macros anyway,
+# no need to worry about them (or any other special cases).
+#
+(defmacro defun-overload (progn
+  (:= name (car args))
+  (:= n-args (count-len (car (cdr args))))
+  (hashmap-put overloaded-fun (expect-ident name) "")
+  (val-set-string name (print-to-mem "%s__fo_%i" (expect-ident name) n-args))
+ (funoverload-old-defun args)))
+
+# II. Changing `lower`.
+#
+(defmacro lower-overload (progn
+  (cond (val-is-list args) (progn
+    (var dummy char*)
+    (cond (not (hashmap-get overloaded-fun (expect-ident (car args)) (ptr-to dummy)))
+      (val-set-string (car args) (print-to-mem "%s__fo_%i" (expect-ident (car args)) (count-len (cdr args)))))))
+ (funoverload-old-lower args)))
+
+# Finally, let's load the layer.
+# (It might make sense to not do this in the layer file, but rather let the 
+# library user do it later.)
+(load-function-overloading)
+# From now on, all function names are mangled and functions can
+# be overloaded.

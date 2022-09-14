@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <dlfcn.h>
+#include <time.h>
 #ifdef TCC
 #include <libtcc.h>
 #endif
@@ -135,6 +136,14 @@ struct cexp *function(struct val *e) {
 }
 
 int cmdswitch_dump_c_code;
+long ticks_prgstart;
+long ticks_incompiler;
+
+long get_ticks_in_ms() {
+  struct timespec clk;
+  clock_gettime(CLOCK_MONOTONIC, &clk);
+  return clk.tv_sec * 1000 + (double)clk.tv_nsec / 1000000.0;
+}
 
 void lower_compile(struct cexp *c) {
   appendStringList(&header, c->Header);
@@ -145,9 +154,15 @@ void lower_compile(struct cexp *c) {
   }
 
   if (c->Global.First) {
-    char file[] = "/tmp/doloutXXXXXX";
+    char file_[] = "/tmp/doloutXXXXXX";
+    char file[128];
     char *content = twoStringListsToOneString(header, c->Global);
-    assert(mkstemp(file));
+    long ticks;
+    assert(mkstemp(file_));
+    snprintf(file, 128, "%s.so", file_);
+    if (ticks_prgstart) {
+      ticks = get_ticks_in_ms();
+    }
 #ifdef TCC
     TCCState *state = tcc_new();
     tcc_set_output_type(state, TCC_OUTPUT_DLL);
@@ -157,13 +172,16 @@ void lower_compile(struct cexp *c) {
 #else
     char cmdline[255];
     snprintf(cmdline, sizeof(cmdline),
-             "clang -xc - -o %s -fpic -g -shared -fpermissive -Wno-everything "
+             "clang -xc - -o %s -fpic -shared -fpermissive -Wno-everything "
              "-Wl,-undefined,dynamic_lookup",
              file);
     FILE *clang = popen(cmdline, "w");
     fwrite(content, strlen(content), 1, clang);
     pclose(clang);
 #endif
+    if (ticks_prgstart) {
+      ticks_incompiler += get_ticks_in_ms() - ticks;
+    }
 
     if (!dlopen(file, RTLD_GLOBAL | RTLD_NOW)) {
       compiler_error_internal("linking failure: %s", dlerror());

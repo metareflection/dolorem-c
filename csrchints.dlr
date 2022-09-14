@@ -16,4 +16,4 @@
   (append-cexp r (get-expression r) (print-to-mem "# %li \"%s\"\n" line filename) "" "")
  r))
 
-(load-csrchints)
+#(load-csrchints)

@@ -154,3 +154,12 @@
                                                (get-context body) (get-expression body))
             (print-to-mem "%s%s" (get-global c) (get-global body))
             (print-to-mem "%s%s" (get-header c) (get-header body)))))
+
+(defmacro loop (progn
+  (:= c (lower-now (car args)))
+  (:= body (lower-now (car (cdr args))))
+ (make-cexp ""
+            (print-to-mem "%swhile(%s) {\n%s%s; }\n" (get-context c) (get-expression c)
+                                               (get-context body) (get-expression body))
+            (print-to-mem "%s%s" (get-global c) (get-global body))
+            (print-to-mem "%s%s" (get-header c) (get-header body)))))

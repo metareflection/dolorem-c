@@ -19,6 +19,9 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[i], "--dump-c-code") == 0 ||
                strcmp(argv[i], "-C") == 0) {
       cmdswitch_dump_c_code = 1;
+    } else if (strcmp(argv[i], "--measure-compilation-time") == 0 ||
+               strcmp(argv[i], "-M") == 0) {
+      ticks_prgstart = get_ticks_in_ms();
     } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
       printf("USAGE: %s [--dump-c-code] [--help] FILES...\n", argv[0]);
       return 0;
@@ -46,5 +49,13 @@ int main(int argc, char **argv) {
   end_include();
   end_lower();
   end_alloc();
+
+  if (ticks_prgstart) {
+    ticks_prgstart = get_ticks_in_ms() - ticks_prgstart;
+    printf("Done. This took %lims, of which %lims (%f%%) were spent in the "
+           "compiler.\n",
+           ticks_prgstart, ticks_incompiler,
+           ((double)ticks_incompiler / (double)ticks_prgstart) * 100.0);
+  }
   return 0;
 }

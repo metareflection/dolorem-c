@@ -8,6 +8,9 @@ void init_lower();
 void end_lower();
 
 extern int cmdswitch_dump_c_code;
+extern long ticks_prgstart;
+extern long ticks_incompiler;
+long get_ticks_in_ms();
 
 typedef struct cexp *(*macrofunptr)(struct val *);
 

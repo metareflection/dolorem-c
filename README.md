@@ -2,19 +2,24 @@
 This is a simplified version of shenniger/dolorem to show the basic principle of
 a dolorem staging system.
 
-## Dependencies
+## Try it online
+Try it here: https://shenniger.github.io/try-dolorem-c/
+
+## Try it on your own computer
+
+### Dependencies
 * Mac OS/Linux (BSD might work)
 * either clang in PATH or libtcc
 
-## Compiling it
+### Compiling it
 Just type `make`. You may need to specify the environment variable `CC`, especially if you installed libtcc in a non-standard directory.
 
 If you want to use tcc compilation (much, much faster, but currently only works on Linux), use `make TCC=1`.
 
-## First steps
+### First steps
 There is some simple example code in this repository. To run it, type `./dolorem a.dlr`. (Depending on the system, you may need to add `.` to LD's search path. `export LD_LIBRARY_PATH=.:$LD_LIBRARY:PATH` should do it.)
 
-### Hello, world
+#### Hello, world
 Here's a dolorem-c program that prints "Hello, world!" during compilation:
 
 ```
@@ -31,7 +36,7 @@ defines a function called `hello` that calls `puts` to print the string. Now we 
 call `hello`. The easiest way is to create a macro `run` that calls `hello` and then evaluates
 to nothing and to run that macro after.
 
-### Addition
+#### Addition
 Dolorem-c currently does not come with any kind of arithmetic abilities. Fortunately,
 this is very easy to change. Suppose we want to create a macro `add` that generates the C
 code for adding two numbers. We start with this (with a question mark instead of the return

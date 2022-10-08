@@ -1,15 +1,9 @@
 (include "def.dlr")
 (include "hashmap.dlr")
 (include "quote.dlr")
+(include "arithmetics.dlr")
 (include "layer.dlr")
 (include "funoverload.dlr")
-
-(defmacro add (progn
-  (:= left (lower-now (car args)))
-  (:= right (lower-now (car (cdr args))))
-  (add-cexp left right)
-  (set-expression left (print-to-mem "(%s) + (%s)" (get-expression left) (get-expression right)))
- left))
 
 (defun rlpl () void (progn
   (var buf chararray)
@@ -18,11 +12,11 @@
   (loop 1 (progn
     (printf "> \n")
     (assign (ptr-deref buf) 0)
-    (fgets buf 255 stdin)
+    (fgets buf 1024 stdin)
     (cond (not (ptr-deref (add buf 1))) (progn
       (puts "")
       (break)))
-    (snprintf filename 128 "<repl-%i>" n)
+    (snprintf filename 1024 "<repl-%i>" n)
     (:= list (lower-now (car (read-string buf filename))))
     (printf "< [%s|%s|%s|%s]\n" (get-expression list) (get-context list) (get-global list) (get-header list))
     (assign n (add n 1))))))

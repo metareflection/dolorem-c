@@ -98,7 +98,7 @@
  (make-cexp "" "" "" "typedef void*(*macrofunptr)(void*a);")))
 (compile (define-macrotypedef)))
 (defmacro define-chararraytypedef
- (make-cexp "" "" "" "typedef char chararray[255];")))
+ (make-cexp "" "" "" "typedef char chararray[1024];")))
 (compile (define-chararraytypedef)))
 
 (compile (funproto override-macro ((char* a) (char* b)) macrofunptr))

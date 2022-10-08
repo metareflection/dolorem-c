@@ -9,7 +9,7 @@
    (fallback args)))
   (lower (progn
     (cond (val-is-list args) (progn
-      (var dummy char*)
+      (var dummy void*)
       (cond (not (hashmap-get overloaded-fun (expect-ident (car args)) (ptr-to dummy)))
         (val-set-string (car args) (print-to-mem "%s__fo_%i" (expect-ident (car args)) (count-len (cdr args)))))))
    (fallback args))))

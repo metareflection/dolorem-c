@@ -16,7 +16,7 @@
   (var filename chararray)
   (:= n 0)
   (loop 1 (progn
-    (printf "> ")
+    (printf "> \n")
     (assign (ptr-deref buf) 0)
     (fgets buf 255 stdin)
     (cond (not (ptr-deref (add buf 1))) (progn

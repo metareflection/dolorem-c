@@ -43,7 +43,9 @@
 
 (compile (funproto puts ((char* a)) void))
 (compile (funproto printf ((char* fmt) ...) int))
+(compile (funproto snprintf ((char* dest) (long i) (char* fmt) ...) int))
 (compile (funproto strcmp ((char* a) (char* b)) int))
+(compile (funproto read-string ((char* a) (char* b)) void*))
 
 (compile (function defun ((void* args)) void* (progn
   (lower-compile (call-macro "function" args))
@@ -91,10 +93,13 @@
   (:= def (print-to-mem "%s %s;" (expect-type (car (cdr args))) (expect-ident (car args))))
  (make-cexp "" "" "" (print-to-mem "extern %s" def))))
 
-# This is ugly. But I'm not sure how else to work around stupid C funptr syntax.
+# This is ugly. But I'm not sure how else to work around stupid C funptr and array syntax.
 (defmacro define-macrotypedef
  (make-cexp "" "" "" "typedef void*(*macrofunptr)(void*a);")))
 (compile (define-macrotypedef)))
+(defmacro define-chararraytypedef
+ (make-cexp "" "" "" "typedef char chararray[255];")))
+(compile (define-chararraytypedef)))
 
 (compile (funproto override-macro ((char* a) (char* b)) macrofunptr))
 
@@ -143,8 +148,14 @@
             (get-context c)
             (get-global c)
             (get-header c))))
+(defmacro ptr-deref (progn
+  (:= c (lower-now (car args)))
+ (make-cexp (print-to-mem "*(%s)" (get-expression c))
+            (get-context c)
+            (get-global c)
+            (get-header c))))
 
-(include "csrchints.dlr")
+#(include "csrchints.dlr")
 
 (defmacro cond (progn
   (:= c (lower-now (car args)))
@@ -163,3 +174,7 @@
                                                (get-context body) (get-expression body))
             (print-to-mem "%s%s" (get-global c) (get-global body))
             (print-to-mem "%s%s" (get-header c) (get-header body)))))
+(defmacro break (make-cexp "" "break;" "" ""))
+
+(compile (funproto fgets ((char* a) (int c) (void* file)) void))
+(compile (external-global stdin void*))

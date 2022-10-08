@@ -15,7 +15,7 @@
     (fgets buf 1024 stdin)
     (cond (not (ptr-deref (add buf 1))) (progn
       (puts "")
-      (break)))
+      (break-loop)))
     (snprintf filename 1024 "<repl-%i>" n)
     (:= list (lower-now (car (read-string buf filename))))
     (printf "< [%s|%s|%s|%s]\n" (get-expression list) (get-context list) (get-global list) (get-header list))

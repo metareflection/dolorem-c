@@ -174,7 +174,7 @@
                                                (get-context body) (get-expression body))
             (print-to-mem "%s%s" (get-global c) (get-global body))
             (print-to-mem "%s%s" (get-header c) (get-header body)))))
-(defmacro break (make-cexp "" "break;" "" ""))
+(defmacro break-loop (make-cexp "" "break;" "" ""))
 
 (compile (funproto fgets ((char* a) (int c) (void* file)) void))
 (compile (external-global stdin void*))

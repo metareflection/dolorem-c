@@ -40,6 +40,7 @@ const char *get_expression(struct cexp *e);
 void set_expression(struct cexp *e, const char *s);
 const char *get_context(struct cexp *e);
 const char *get_global(struct cexp *e);
+void set_global(struct cexp *e, const char *s);
 const char *get_header(struct cexp *e);
 
 extern char nullStr;

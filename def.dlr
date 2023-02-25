@@ -9,6 +9,7 @@
 (compile (funproto get-global ((void* a)) char*))
 (compile (funproto get-header ((void* a)) char*))
 (compile (funproto set-expression ((void* a) (char* b)) void))
+(compile (funproto set-global ((void* a) (char* b)) void))
 (compile (funproto cdr ((void* a)) void*))
 (compile (funproto print-list-to-stdout ((void* a)) void))
 (compile (funproto is-nil ((void* a)) int))
@@ -42,6 +43,8 @@
 (compile (funproto get-loc-info ((void* a) (char** name) (long* l) (long* chr) (char** line)) void))
 
 (compile (funproto puts ((char* a)) void))
+(compile (funproto strstr ((char* haystack) (char* needle)) char*))
+(compile (funproto memcpy ((char* dest) (char* src) (long size)) char*))
 (compile (funproto printf ((char* fmt) ...) int))
 (compile (funproto snprintf ((char* dest) (long i) (char* fmt) ...) int))
 (compile (funproto strcmp ((char* a) (char* b)) int))
@@ -126,6 +129,17 @@
   (add-cexp lhs rhs)
   (append-cexp lhs
                (print-to-mem "(%s) && (%s)" (get-expression lhs) (get-expression rhs))
+               ""
+               ""
+               "")
+ lhs))
+
+(defmacro or (progn
+  (:= lhs (lower-now (car args)))
+  (:= rhs (lower-now (car (cdr args))))
+  (add-cexp lhs rhs)
+  (append-cexp lhs
+               (print-to-mem "(%s) || (%s)" (get-expression lhs) (get-expression rhs))
                ""
                ""
                "")

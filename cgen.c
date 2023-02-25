@@ -139,3 +139,8 @@ const char *get_context(struct cexp *e) { return toOneString(e->Context); }
 const char *get_global(struct cexp *e) { return toOneString(e->Global); }
 const char *get_header(struct cexp *e) { return toOneString(e->Header); }
 void set_expression(struct cexp *e, const char *s) { e->E = s; }
+void set_global(struct cexp *e, const char *s) {
+  e->Global.Last = e->Global.First;
+  e->Global.First->L = NULL;
+  e->Global.First->S = s;
+}

@@ -9,7 +9,7 @@
 (generate-arithmetic-operator add "(%s) + (%s)")
 (generate-arithmetic-operator sub "(%s) - (%s)")
 (generate-arithmetic-operator mul "(%s) * (%s)")
-(generate-arithmetic-operator div "(%s) / (%s)")
+(generate-arithmetic-operator divi "(%s) / (%s)")
 (generate-arithmetic-operator equals "(%s) == (%s)")
 (generate-arithmetic-operator nequals "(%s) == (%s)")
 

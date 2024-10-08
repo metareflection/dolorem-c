@@ -1,6 +1,11 @@
 ## Overview
-This is a simplified version of shenniger/dolorem to show the basic principle of
+This is a simplified version of [shenniger/dolorem](https://github.com/shenniger/dolorem) to show the basic principle of
 a dolorem staging system.
+
+## Publication
+Simon Henniger and Nada Amin, “The Dolorem Pattern: Growing a Language through Compile-Time Function Execution”,
+in 37th European Conference on Object-Oriented Programming (ECOOP 2023), LIPIcs, Vol. 263, pp. 41:1–41:27,
+2023, DOI: <https://doi.org/10.4230/LIPIcs.ECOOP.2023.41>.
 
 ## Try it online
 Try it here: https://shenniger.github.io/try-dolorem-c/
